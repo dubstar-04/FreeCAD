@@ -124,6 +124,14 @@ SET(PathScripts_SRCS
     PathScripts/PathWaterline.py
     PathScripts/PathWaterlineGui.py
     PathScripts/PostUtils.py
+
+    PathScripts/PathTurnBase.py
+    PathScripts/PathTurnBaseGui.py
+    PathScripts/PathTurnFace.py
+    PathScripts/PathTurnFaceGui.py
+    PathScripts/PathTurnProfile.py
+    PathScripts/PathTurnProfileGui.py
+
     PathScripts/__init__.py
 )
 
