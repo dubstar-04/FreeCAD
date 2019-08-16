@@ -26,6 +26,7 @@ import FreeCAD
 import FreeCADGui
 import PathScripts.PathLog as PathLog
 import PathScripts.PathOpGui as PathOpGui
+import PathScripts.PathGui as PathGui
 
 from PySide import QtCore, QtGui
 
@@ -63,29 +64,21 @@ class TaskPanelTurnBase(PathOpGui.TaskPanelPage):
     def getFields(self, obj):
         '''getFields(obj) ... transfers values from UI to obj's proprties'''
         PathLog.track()
+
         if obj.Direction != str(self.form.direction.currentText()):
             obj.Direction = str(self.form.direction.currentText())
-
-        if obj.MinDia != self.form.minDia.value():
-            obj.MinDia = self.form.minDia.value() 
-        
-        if obj.MaxDia != self.form.maxDia.value():
-            obj.MaxDia = self.form.maxDia.value() 
-
-        if obj.StartOffset != self.form.startOffset.value():
-            obj.StartOffset = self.form.startOffset.value()
-
-        if obj.EndOffset != self.form.endOffset.value():
-            obj.EndOffset = self.form.endOffset.value()
+            
+        PathGui.updateInputField(obj, 'StepOver', self.form.stepOver)   
+        PathGui.updateInputField(obj, 'MinDia', self.form.minDia)
+        PathGui.updateInputField(obj, 'MaxDia', self.form.maxDia)
+        PathGui.updateInputField(obj, 'StartOffset', self.form.startOffset)
+        PathGui.updateInputField(obj, 'EndOffset', self.form.endOffset)
 
         if obj.AllowGrooving != self.form.allowGrooving.isChecked():
             obj.AllowGrooving = self.form.allowGrooving.isChecked()
 
         if obj.AllowFacing != self.form.allowFacing.isChecked():
             obj.AllowFacing= self.form.allowFacing.isChecked()
-        
-        if obj.StepOver != self.form.stepOver.value():
-            obj.StepOver = self.form.stepOver.value()   
 
         self.updateToolController(obj, self.form.toolController)
 
@@ -93,11 +86,25 @@ class TaskPanelTurnBase(PathOpGui.TaskPanelPage):
         '''setFields(obj) ... transfers obj's property values to UI'''
         PathLog.track()
 
-        self.form.stepOver.setValue(obj.StepOver)
         self.selectInComboBox(obj.Direction, self.form.direction)
-        #self.selectInComboBox(obj.StartSide, self.form.startSide)
-
+        self.form.stepOver.setText(FreeCAD.Units.Quantity(obj.StepOver.Value, FreeCAD.Units.Length).UserString)
+        self.form.minDia.setText(FreeCAD.Units.Quantity(obj.MinDia.Value, FreeCAD.Units.Length).UserString)
+        self.form.maxDia.setText(FreeCAD.Units.Quantity(obj.MaxDia.Value, FreeCAD.Units.Length).UserString)
+        self.form.minDia.setText(FreeCAD.Units.Quantity(obj.MinDia.Value, FreeCAD.Units.Length).UserString)
+        self.form.minDia.setText(FreeCAD.Units.Quantity(obj.MinDia.Value, FreeCAD.Units.Length).UserString)
+        self.form.startOffset.setText(FreeCAD.Units.Quantity(obj.StartOffset.Value, FreeCAD.Units.Length).UserString)
+        self.form.endOffset.setText(FreeCAD.Units.Quantity(obj.EndOffset.Value, FreeCAD.Units.Length).UserString)
         self.setupToolController(obj, self.form.toolController)
+
+        if obj.AllowGrooving:
+            self.form.allowGrooving.setCheckState(QtCore.Qt.Checked)
+        else:
+            self.form.allowGrooving.setCheckState(QtCore.Qt.Unchecked)
+
+        if obj.AllowFacing:
+            self.form.allowFacing.setCheckState(QtCore.Qt.Checked)
+        else:
+            self.form.allowFacing.setCheckState(QtCore.Qt.Unchecked)
 
     def getSignalsForUpdate(self, obj):
         '''getSignalsForUpdate(obj) ... return list of signals for updating obj'''
@@ -105,7 +112,6 @@ class TaskPanelTurnBase(PathOpGui.TaskPanelPage):
 
         signals.append(self.form.stepOver.editingFinished)
         signals.append(self.form.direction.currentIndexChanged)
-
         signals.append(self.form.minDia.editingFinished)
         signals.append(self.form.maxDia.editingFinished)
         signals.append(self.form.startOffset.editingFinished)
