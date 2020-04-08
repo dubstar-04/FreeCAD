@@ -81,7 +81,8 @@ class ObjectPocket(PathAreaOp.ObjectOp):
         obj.OffsetPattern = ['ZigZag', 'Offset', 'Spiral', 'ZigZagOffset', 'Line', 'Grid', 'Triangle']
         obj.addProperty("App::PropertyBool", "MinTravel", "Pocket", QtCore.QT_TRANSLATE_NOOP("App::Property", "Use 3D Sorting of Path"))
         obj.addProperty("App::PropertyBool", "KeepToolDown", "Pocket", QtCore.QT_TRANSLATE_NOOP("App::Property", "Attempts to avoid unnecessary retractions."))
-        obj.addProperty("App::PropertyEnumeration", "CutDirection", "Pocket", QtCore.QT_TRANSLATE_NOOP("App::Property", "The direction that the toolpath should cut"))
+        obj.addProperty("App::PropertyBool", "SingleDirection", "Pocket", QtCore.QT_TRANSLATE_NOOP("App::Property", "Generate the toolpath using a single cut direction"))
+        obj.addProperty("App::PropertyEnumeration", "CutDirection", "Pocket", QtCore.QT_TRANSLATE_NOOP("App::Property", "The direction for the single direction toolpath"))
         obj.CutDirection = ['None','XPositive', 'XNegative', 'YPositive', 'YNegative']
         self.initPocketOp(obj)
 
@@ -101,6 +102,15 @@ class ObjectPocket(PathAreaOp.ObjectOp):
         params['PocketMode'] = 1
         params['SectionCount'] = -1
         params['Angle'] = obj.ZigZagAngle
+
+        if obj.SingleDirection:
+            if obj.CutDirection in ['XPositive', 'XNegative']: 
+                params['Angle'] = 0
+            elif obj.CutDirection in ['YPositive', 'YNegative']:
+                params['Angle'] = 90
+            else:
+                PathLog.warning("Direction required for single direction\r\n")
+  
         params['FromCenter'] = (obj.StartAt == "Center")
         params['PocketStepover'] = (self.radius * 2) * (float(obj.StepOver)/100)
         extraOffset = obj.ExtraOffset.Value
@@ -120,8 +130,9 @@ class ObjectPocket(PathAreaOp.ObjectOp):
         CutMode = ['Conventional', 'Climb']
         params['orientation'] = CutMode.index(obj.CutMode)
 
-        Direction = ['None','XPositive', 'XNegative', 'YPositive', 'YNegative']
-        params['direction'] = Direction.index(obj.CutDirection)
+        if obj.SingleDirection:
+            Direction = ['None','XPositive', 'XNegative', 'YPositive', 'YNegative']
+            params['direction'] = Direction.index(obj.CutDirection)
 
         # if MinTravel is turned on, set path sorting to 3DSort
         # 3DSort shouldn't be used without a valid start point. Can cause

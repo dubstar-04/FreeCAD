@@ -96,6 +96,22 @@ class TaskPanelOpPage(PathOpGui.TaskPanelPage):
         if setModel:
             PathGui.updateInputField(obj, 'ZigZagAngle', self.form.zigZagAngle)
 
+    def updateCutDirection(self, obj, setModel=True):
+
+        if obj.OffsetPattern in ['Line']:
+            self.form.singleDirection.setEnabled(True)
+        else:
+            self.form.singleDirection.setEnabled(False)
+
+        if obj.SingleDirection:
+            self.form.cutDirection.setEnabled(True)
+            if not obj.CutDirection == 'None':
+                self.form.zigZagAngle.setEnabled(False)
+        else:
+            self.form.cutDirection.setEnabled(False)
+            self.form.zigZagAngle.setEnabled(True)
+
+
     def getFields(self, obj):
         '''getFields(obj) ... transfers values from UI to obj's proprties'''
         if obj.CutMode != str(self.form.cutMode.currentText()):
@@ -115,11 +131,18 @@ class TaskPanelOpPage(PathOpGui.TaskPanelPage):
         if obj.UseStartPoint != self.form.useStartPoint.isChecked():
             obj.UseStartPoint = self.form.useStartPoint.isChecked()
 
+        if obj.SingleDirection != self.form.singleDirection.isChecked():
+            obj.SingleDirection = self.form.singleDirection.isChecked()
+
+        if obj.CutDirection != str(self.form.cutDirection.currentText()):
+            obj.CutDirection = str(self.form.cutDirection.currentText())
+
         if FeatureOutline & self.pocketFeatures():
             if obj.UseOutline != self.form.useOutline.isChecked():
                 obj.UseOutline = self.form.useOutline.isChecked()
 
         self.updateMinTravel(obj)
+        self.updateCutDirection(obj)
 
         if FeatureFacing & self.pocketFeatures():
             if obj.BoundaryShape != str(self.form.boundaryShape.currentText()):
@@ -141,6 +164,10 @@ class TaskPanelOpPage(PathOpGui.TaskPanelPage):
         self.form.minTravel.setChecked(obj.MinTravel)
         self.updateMinTravel(obj, False)
 
+        self.form.singleDirection.setChecked(obj.SingleDirection)
+        self.selectInComboBox(obj.CutDirection, self.form.cutDirection)
+        self.updateCutDirection(obj, False)
+        
         self.selectInComboBox(obj.OffsetPattern, self.form.offsetPattern)
         self.selectInComboBox(obj.CutMode, self.form.cutMode)
         self.setupToolController(obj, self.form.toolController)
@@ -166,6 +193,8 @@ class TaskPanelOpPage(PathOpGui.TaskPanelPage):
         signals.append(self.form.minTravel.clicked)
         signals.append(self.form.coolantController.currentIndexChanged)
         signals.append(self.form.enableRotation.currentIndexChanged)
+        signals.append(self.form.singleDirection.clicked)
+        signals.append(self.form.cutDirection.currentIndexChanged)
 
         if FeatureFacing & self.pocketFeatures():
             signals.append(self.form.boundaryShape.currentIndexChanged)
