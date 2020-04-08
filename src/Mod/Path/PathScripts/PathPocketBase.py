@@ -83,6 +83,7 @@ class ObjectPocket(PathAreaOp.ObjectOp):
         obj.addProperty("App::PropertyBool", "KeepToolDown", "Pocket", QtCore.QT_TRANSLATE_NOOP("App::Property", "Attempts to avoid unnecessary retractions."))
         obj.addProperty("App::PropertyBool", "SingleDirection", "Pocket", QtCore.QT_TRANSLATE_NOOP("App::Property", "Generate the toolpath using a single cut direction"))
         obj.addProperty("App::PropertyEnumeration", "CutDirection", "Pocket", QtCore.QT_TRANSLATE_NOOP("App::Property", "The direction for the single direction toolpath"))
+
         obj.CutDirection = ['None','XPositive', 'XNegative', 'YPositive', 'YNegative']
         self.initPocketOp(obj)
 
