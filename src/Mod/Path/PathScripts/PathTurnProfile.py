@@ -24,7 +24,6 @@
 
 import FreeCAD
 import Path
-
 import PathScripts.PathTurnBase as PathTurnBase
 from PySide import QtCore
 
@@ -51,8 +50,8 @@ class ObjectTurnProfile(PathTurnBase.ObjectOp):
         #self.clear_path() 
         profileOP = LLP.ProfileOP()
         profileOP.set_params(self.getProps(obj))
-        profileOP.add_stock(self.stockBB)
-        profileOP.add_part(self.model.Shape.BoundBox)
+        profileOP.add_stock(self.stock.Shape.BoundBox)
+        profileOP.add_part(self.model[0].Shape.BoundBox)
         profileOP.add_part_edges(self.part_outline)
         PathCode = profileOP.get_gcode()
 
@@ -62,6 +61,13 @@ class ObjectTurnProfile(PathTurnBase.ObjectOp):
                 #print('command:', command.get_movement(), command.get_params())
                 pathCommand = Path.Command(command.get_movement(), command.get_params())            
                 self.commandlist.append(pathCommand)
+
+    def opSetDefaultValues(self, obj, job):
+        '''opSetDefaultValues(obj, job) ... initialize defaults'''
+        model = job.Model.Group[0]
+        obj.OpStartDepth = obj.OpStockZMax
+        obj.FinalDepth = model.Shape.BoundBox.ZMin
+        print('opSetDefaultValues Profile - Start Depth: ', obj.OpStartDepth, 'Final Depth: ', obj.FinalDepth)
 
 def SetupProperties():
     setup = []

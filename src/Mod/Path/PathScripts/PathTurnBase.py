@@ -98,9 +98,6 @@ class ObjectOp(PathOp.ObjectOp):
         PathLog.track()
 
         self.guiMsgs = []       # pylint: disable=attribute-defined-outside-init
-
-        self.stockBB = PathUtils.findParentJob(obj).Stock.Shape.BoundBox  # pylint: disable=attribute-defined-outside-init
-        self.model = PathUtils.findParentJob(obj).Model.Group[0]
         self.tool = None
         self.clearHeight = obj.ClearanceHeight.Value  # pylint: disable=attribute-defined-outside-init
         self.safeHeight = obj.SafeHeight.Value  # pylint: disable=attribute-defined-outside-init
@@ -113,8 +110,6 @@ class ObjectOp(PathOp.ObjectOp):
         self.allowFacing = obj.AllowFacing
         self.stepOver = obj.StepOver.Value
         self.finishPasses = 2
-        #self.hfeed = 100
-        #self.vfeed = 50
 
         # Clear any existing gcode
         obj.Path.Commands = []
@@ -125,6 +120,8 @@ class ObjectOp(PathOp.ObjectOp):
         self.generate_gcode(obj)
 
     def getProps(self, obj):
+        #TODO: use the start and final depths
+        print('getProps - Start Depth: ', obj.OpStartDepth, 'Final Depth: ', obj.FinalDepth)
         props = {}
         props['min_dia']=self.minDia
         props['extra_dia']=self.maxDia
@@ -142,17 +139,18 @@ class ObjectOp(PathOp.ObjectOp):
         '''
         Get Stock Silhoutte
         '''
-        stock_z_pos = self.stockBB.ZMax
-        self.stock_plane_length = self.stockBB.ZLength + self.endOffset + self.startOffset 
-        self.stock_plane_width = self.stockBB.XLength/2 - self.minDia + self.maxDia 
-        stock_plane = Part.makePlane(self.stock_plane_length, self.stock_plane_width, FreeCAD.Vector(-self.minDia - self.stock_plane_width, 0, stock_z_pos + self.startOffset ), FreeCAD.Vector(0,-1,0))
+        stockBB = self.stock.Shape.BoundBox
+        stock_z_pos = stockBB.ZMax
+        stock_plane_length = stockBB.ZLength + self.endOffset + self.startOffset 
+        stock_plane_width = stockBB.XLength/2 - self.minDia + self.maxDia 
+        stock_plane = Part.makePlane(stock_plane_length, stock_plane_width, FreeCAD.Vector(-self.minDia - stock_plane_width, 0, stock_z_pos + self.startOffset ), FreeCAD.Vector(0,-1,0))
         return stock_plane
 
     def get_part_outline(self):
         '''
         Get Part Outline
         '''
-        sections=Path.Area().add(self.model.Shape).makeSections(mode=0, heights=[0.0],  project=True, plane=self.stock_silhoutte)
+        sections=Path.Area().add(self.model[0].Shape).makeSections(mode=0, heights=[0.0],  project=True, plane=self.stock_silhoutte)
         part_silhoutte = sections[0].setParams(Offset=0.0).getShape()
         part_bound_face = sections[0].setParams(Offset=0.1).getShape()
         path_area = self.stock_silhoutte.cut(part_silhoutte)
