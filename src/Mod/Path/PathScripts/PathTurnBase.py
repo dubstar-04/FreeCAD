@@ -119,10 +119,12 @@ class ObjectOp(PathOp.ObjectOp):
         #self.hfeed = 100
         #self.vfeed = 50
 
+        # Clear any existing gcode
+        obj.Path.Commands = []
+
         print("Process Geometry")     
         self.stock_silhoutte = self.get_stock_silhoutte()  
-        part_silhoutte = self.get_part_silhoutte()
-        self.part_outline = self.get_part_outline(part_silhoutte)
+        self.part_outline = self.get_part_outline()
         self.generate_gcode(obj)
 
     def getProps(self):
@@ -143,32 +145,20 @@ class ObjectOp(PathOp.ObjectOp):
         '''
         Get Stock Silhoutte
         '''
-        #stock_bb = self.stock_bb
-        #print('Stock BB:', stock_bb.XLength, stock_bb.ZLength )
         stock_z_pos = self.stockBB.ZMax
         self.stock_plane_length = self.stockBB.ZLength + self.endOffset + self.startOffset 
         self.stock_plane_width = self.stockBB.XLength/2 - self.minDia + self.maxDia 
         stock_plane = Part.makePlane(self.stock_plane_length, self.stock_plane_width, FreeCAD.Vector(-self.minDia - self.stock_plane_width, 0, stock_z_pos + self.startOffset ), FreeCAD.Vector(0,-1,0))
         return stock_plane
 
-    def get_part_silhoutte(self):
-        '''  
-        Get Part Silhoutte
-        '''
-        sections=Path.Area().add(self.model.Shape).makeSections(mode=0, heights=[0.0],  project=True, plane=self.stock_silhoutte)
-        part_silhoutte = sections[0].setParams(Offset=0.0).getShape()
-        
-
-        #Part.show(part_silhoutte, 'part_silhoutte')
-        return part_silhoutte
-
-    def get_part_outline(self, part_silhoutte):
+    def get_part_outline(self):
         '''
         Get Part Outline
         '''
+        sections=Path.Area().add(self.model.Shape).makeSections(mode=0, heights=[0.0],  project=True, plane=self.stock_silhoutte)
+        part_silhoutte = sections[0].setParams(Offset=0.0).getShape()
+        part_bound_face = sections[0].setParams(Offset=0.1).getShape()
         path_area = self.stock_silhoutte.cut(part_silhoutte)
-        part_bound_shape = part_silhoutte.OuterWire.makeOffset2D(0.1)
-        part_bound_face = Part.makeFace(part_bound_shape , 'Part::FaceMakerSimple')
 
         part_edges = []
         part_segments = []
