@@ -104,9 +104,6 @@ class ObjectOp(PathOp.ObjectOp):
         self.tool = None
         self.clearHeight = obj.ClearanceHeight.Value  # pylint: disable=attribute-defined-outside-init
         self.safeHeight = obj.SafeHeight.Value  # pylint: disable=attribute-defined-outside-init
-        self.axialFeed = 0.0  # pylint: disable=attribute-defined-outside-init
-        self.axialRapid = 0.0  # pylint: disable=attribute-defined-outside-init
-
          
         self.minDia = obj.MinDia.Value
         self.maxDia = obj.MaxDia.Value
@@ -127,7 +124,7 @@ class ObjectOp(PathOp.ObjectOp):
         self.part_outline = self.get_part_outline()
         self.generate_gcode(obj)
 
-    def getProps(self):
+    def getProps(self, obj):
         props = {}
         props['min_dia']=self.minDia
         props['extra_dia']=self.maxDia
@@ -137,8 +134,8 @@ class ObjectOp(PathOp.ObjectOp):
         props['allow_facing']=self.allowFacing
         props['step_over']=self.stepOver
         props['finish_passes']=self.finishPasses
-        props['hfeed' ]=self.axialFeed 
-        props['vfeed']=self.axialFeed
+        props['hfeed' ]=obj.ToolController.HorizFeed.Value 
+        props['vfeed']=obj.ToolController.VertFeed.Value
         return props
 
     def get_stock_silhoutte(self):

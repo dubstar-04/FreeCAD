@@ -50,7 +50,7 @@ class ObjectTurnProfile(PathTurnBase.ObjectOp):
         '''
         #self.clear_path() 
         profileOP = LLP.ProfileOP()
-        profileOP.set_params(self.getProps())
+        profileOP.set_params(self.getProps(obj))
         profileOP.add_stock(self.stockBB)
         profileOP.add_part(self.model.Shape.BoundBox)
         profileOP.add_part_edges(self.part_outline)

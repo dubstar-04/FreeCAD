@@ -49,7 +49,7 @@ class ObjectTurnFace(PathTurnBase.ObjectOp):
         '''
         #self.clear_path() 
         facingOP = LLF.FaceOP()
-        facingOP.set_params(self.getProps())
+        facingOP.set_params(self.getProps(obj))
         facingOP.add_stock(self.stockBB)
         facingOP.add_part(self.model.Shape.BoundBox)
         facingOP.add_part_edges(self.part_outline)
