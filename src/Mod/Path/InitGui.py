@@ -137,7 +137,7 @@ class PathWorkbench (Workbench):
 
         self.appendMenu([QtCore.QT_TRANSLATE_NOOP("Path", "&Path")], projcmdlist + ["Path_ExportTemplate", "Separator"] +
                         toolbitcmdlist + toolcmdlist + ["Separator"] + twodopcmdlist + engravecmdlist + ["Separator"] +
-                        threedopcmdlist + ["Separator"] + turncmdlist +["Separator"]))
+                        threedopcmdlist + ["Separator"] + turncmdlist +["Separator"])
         self.appendMenu([QtCore.QT_TRANSLATE_NOOP("Path", "&Path"), QtCore.QT_TRANSLATE_NOOP(
             "Path", "Path Dressup")], dressupcmdlist)
         self.appendMenu([QtCore.QT_TRANSLATE_NOOP("Path", "&Path"), QtCore.QT_TRANSLATE_NOOP(
