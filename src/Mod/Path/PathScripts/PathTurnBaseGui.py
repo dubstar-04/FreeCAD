@@ -81,6 +81,7 @@ class TaskPanelTurnBase(PathOpGui.TaskPanelPage):
             obj.AllowFacing= self.form.allowFacing.isChecked()
 
         self.updateToolController(obj, self.form.toolController)
+        self.updateCoolant(obj, self.form.coolantController)
 
     def setFields(self, obj):
         '''setFields(obj) ... transfers obj's property values to UI'''
@@ -95,6 +96,7 @@ class TaskPanelTurnBase(PathOpGui.TaskPanelPage):
         self.form.startOffset.setText(FreeCAD.Units.Quantity(obj.StartOffset.Value, FreeCAD.Units.Length).UserString)
         self.form.endOffset.setText(FreeCAD.Units.Quantity(obj.EndOffset.Value, FreeCAD.Units.Length).UserString)
         self.setupToolController(obj, self.form.toolController)
+        self.setupCoolant(obj, self.form.coolantController)
 
         if obj.AllowGrooving:
             self.form.allowGrooving.setCheckState(QtCore.Qt.Checked)
@@ -120,5 +122,6 @@ class TaskPanelTurnBase(PathOpGui.TaskPanelPage):
         signals.append(self.form.allowFacing.stateChanged)
 
         signals.append(self.form.toolController.currentIndexChanged)
+        signals.append(self.form.coolantController.currentIndexChanged)
 
         return signals
