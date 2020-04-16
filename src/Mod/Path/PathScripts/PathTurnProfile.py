@@ -25,6 +25,7 @@
 import FreeCAD
 import Path
 import PathScripts.PathTurnBase as PathTurnBase
+import PathScripts.PathLog as PathLog
 from PySide import QtCore
 
 import LibLathe.LLProfileOP as LLP
@@ -47,7 +48,6 @@ class ObjectTurnProfile(PathTurnBase.ObjectOp):
         '''
         Generate GCode for the op
         '''
-        #self.clear_path() 
         profileOP = LLP.ProfileOP()
         profileOP.set_params(self.getProps(obj))
         profileOP.add_stock(self.stock.Shape.BoundBox)
@@ -63,11 +63,13 @@ class ObjectTurnProfile(PathTurnBase.ObjectOp):
                 self.commandlist.append(pathCommand)
 
     def opSetDefaultValues(self, obj, job):
-        '''opSetDefaultValues(obj, job) ... initialize defaults'''
-        model = job.Model.Group[0]
+        obj.OpStartDepth = job.Stock.Shape.BoundBox.ZMax
+        obj.OpFinalDepth = job.Stock.Shape.BoundBox.ZMin
+
+    def opUpdateDepths(self, obj):
         obj.OpStartDepth = obj.OpStockZMax
-        obj.FinalDepth = model.Shape.BoundBox.ZMin
-        print('opSetDefaultValues Profile - Start Depth: ', obj.OpStartDepth, 'Final Depth: ', obj.FinalDepth)
+        obj.OpFinalDepth = obj.OpStockZMin
+        print('opSetDefaultValues:', obj.OpStartDepth.Value, obj.OpFinalDepth.Value)      
 
 def SetupProperties():
     setup = []
@@ -82,7 +84,7 @@ def SetupProperties():
     return setup
 
 def Create(name, obj=None):
-    '''Create(name) ... Creates and returns a Helix operation.'''
+    '''Create(name) ... Creates and returns a TurnProfile operation.'''
     if obj is None:
         obj = FreeCAD.ActiveDocument.addObject("Path::FeaturePython", name)
     obj.Proxy = ObjectTurnProfile(obj, name)

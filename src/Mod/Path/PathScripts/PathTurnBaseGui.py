@@ -44,15 +44,7 @@ else:
     PathLog.setLevel(PathLog.Level.NOTICE, PathLog.thisModule())
 
 class TaskPanelTurnBase(PathOpGui.TaskPanelPage):
-    '''Page controller class for pocket operations, supports:
-          FeaturePocket  ... used for pocketing operation
-          FeatureFacing  ... used for face milling operation
-          FeatureOutline ... used for pocket-shape operation
-    '''
-
-    DataFeatureName = QtCore.Qt.ItemDataRole.UserRole
-    DataObject      = QtCore.Qt.ItemDataRole.UserRole + 1
-    DataObjectSub   = QtCore.Qt.ItemDataRole.UserRole + 2
+    '''Page controller class for turning operations '''
 
     def initPage(self, obj):
         self.updating = False # pylint: disable=attribute-defined-outside-init
@@ -64,15 +56,10 @@ class TaskPanelTurnBase(PathOpGui.TaskPanelPage):
     def getFields(self, obj):
         '''getFields(obj) ... transfers values from UI to obj's proprties'''
         PathLog.track()
-
-        if obj.Direction != str(self.form.direction.currentText()):
-            obj.Direction = str(self.form.direction.currentText())
             
-        PathGui.updateInputField(obj, 'StepOver', self.form.stepOver)   
-        PathGui.updateInputField(obj, 'MinDia', self.form.minDia)
-        PathGui.updateInputField(obj, 'MaxDia', self.form.maxDia)
-        PathGui.updateInputField(obj, 'StartOffset', self.form.startOffset)
-        PathGui.updateInputField(obj, 'EndOffset', self.form.endOffset)
+        PathGui.updateInputField(obj, 'StepOver', self.form.stepOver)  
+        
+        obj.FinishPasses = self.form.finishPasses.value()   
 
         if obj.AllowGrooving != self.form.allowGrooving.isChecked():
             obj.AllowGrooving = self.form.allowGrooving.isChecked()
@@ -87,14 +74,8 @@ class TaskPanelTurnBase(PathOpGui.TaskPanelPage):
         '''setFields(obj) ... transfers obj's property values to UI'''
         PathLog.track()
 
-        self.selectInComboBox(obj.Direction, self.form.direction)
         self.form.stepOver.setText(FreeCAD.Units.Quantity(obj.StepOver.Value, FreeCAD.Units.Length).UserString)
-        self.form.minDia.setText(FreeCAD.Units.Quantity(obj.MinDia.Value, FreeCAD.Units.Length).UserString)
-        self.form.maxDia.setText(FreeCAD.Units.Quantity(obj.MaxDia.Value, FreeCAD.Units.Length).UserString)
-        self.form.minDia.setText(FreeCAD.Units.Quantity(obj.MinDia.Value, FreeCAD.Units.Length).UserString)
-        self.form.minDia.setText(FreeCAD.Units.Quantity(obj.MinDia.Value, FreeCAD.Units.Length).UserString)
-        self.form.startOffset.setText(FreeCAD.Units.Quantity(obj.StartOffset.Value, FreeCAD.Units.Length).UserString)
-        self.form.endOffset.setText(FreeCAD.Units.Quantity(obj.EndOffset.Value, FreeCAD.Units.Length).UserString)
+        self.form.finishPasses.setValue(obj.FinishPasses)
         self.setupToolController(obj, self.form.toolController)
         self.setupCoolant(obj, self.form.coolantController)
 
@@ -113,11 +94,7 @@ class TaskPanelTurnBase(PathOpGui.TaskPanelPage):
         signals = []
 
         signals.append(self.form.stepOver.editingFinished)
-        signals.append(self.form.direction.currentIndexChanged)
-        signals.append(self.form.minDia.editingFinished)
-        signals.append(self.form.maxDia.editingFinished)
-        signals.append(self.form.startOffset.editingFinished)
-        signals.append(self.form.endOffset.editingFinished)
+        signals.append(self.form.finishPasses.valueChanged)
         signals.append(self.form.allowGrooving.stateChanged)
         signals.append(self.form.allowFacing.stateChanged)
 

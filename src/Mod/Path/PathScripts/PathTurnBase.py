@@ -28,9 +28,9 @@ import Path
 import PathScripts.PathLog as PathLog
 import PathScripts.PathOp as PathOp
 import PathScripts.PathUtils as PathUtils
+#import PathScripts.PathGeom as PathGeom
 
 from PySide import QtCore
-import PathScripts.PathGeom as PathGeom
 
 import math
 import Draft
@@ -60,68 +60,45 @@ else:
 
 class ObjectOp(PathOp.ObjectOp):
     '''Base class for proxy objects of all turning operations.'''
-    # These are static while document is open, if it contains a CircularHole Op
-    initOpFinalDepth = None
-    initOpStartDepth = None
-    initWithRotation = False
-    defValsSet = False
-    docRestored = False
 
     def opFeatures(self, obj):
-        '''opFeatures(obj) ... calls circularHoleFeatures(obj) and ORs in the standard features required for processing circular holes.
-        Do not overwrite, implement circularHoleFeatures(obj) instead'''
-        return PathOp.FeatureTool | PathOp.FeatureDepths | PathOp.FeatureHeights | PathOp.FeatureBaseFaces | PathOp.FeatureCoolant
+        '''opFeatures(obj) ... returns the OR'ed list of features used and supported by the operation.'''
+        return PathOp.FeatureDiameters | PathOp.FeatureTool | PathOp.FeatureDepths | PathOp.FeatureCoolant
 
     def initOperation(self, obj):
-        '''initOperation(obj) ... adds Disabled properties and calls initCircularHoleOperation(obj).
-        Do not overwrite, implement initCircularHoleOperation(obj) instead.'''
+        '''initOperation(obj)'''
 
-        obj.addProperty("App::PropertyStringList", "Disabled", "Base", QtCore.QT_TRANSLATE_NOOP("Path", "List of disabled features"))
-        
-        obj.addProperty("App::PropertyLength", "StepOver", "Turn Path", translate("TurnPath", "Operation Stepover"))
-        
-        obj.addProperty("App::PropertyLength", "MinDia", "Turn Path", translate("TurnPath", "Minimum Diameter for Operation"))
-        obj.addProperty("App::PropertyLength", "MaxDia", "Turn Path", translate("TurnPath", "Minimum Diameter for Operation"))
-
-        obj.addProperty("App::PropertyLength", "StartOffset", "Turn Path", translate("TurnPath", "Minimum Diameter for Operation"))
-        obj.addProperty("App::PropertyLength", "EndOffset", "Turn Path", translate("TurnPath", "Minimum Diameter for Operation"))
-
+        obj.addProperty("App::PropertyLength", "StepOver", "Turn Path", translate("TurnPath", "Operation Stepover")).StepOver = 1.0 
+        obj.addProperty("App::PropertyInteger", "FinishPasses", "Turn Path", translate("TurnPath", "Number of Finish Passes")).FinishPasses = 2
         obj.addProperty("App::PropertyBool", "AllowGrooving", "Turn Path", translate("TurnPath", "Minimum Diameter for Operation"))
         obj.addProperty("App::PropertyBool", "AllowFacing", "Turn Path", translate("TurnPath", "Minimum Diameter for Operation"))
-
-        obj.addProperty("App::PropertyEnumeration", "Direction", "Turn Path", translate("TurnPath", "Spindle Direction, ClockWise (CW), or CounterClockWise (CCW)"))
-        obj.Direction = ['CW', 'CCW']
 
     def opExecute(self, obj):
         '''opExecute(obj) ... processes all Base features
         '''
         PathLog.track()
-
-        self.guiMsgs = []       # pylint: disable=attribute-defined-outside-init
-        self.tool = None
-        self.clearHeight = obj.ClearanceHeight.Value  # pylint: disable=attribute-defined-outside-init
-        self.safeHeight = obj.SafeHeight.Value  # pylint: disable=attribute-defined-outside-init
-         
-        self.minDia = obj.MinDia.Value
-        self.maxDia = obj.MaxDia.Value
-        self.startOffset = obj.StartOffset.Value
-        self.endOffset = obj.EndOffset.Value
+        self.tool = None       
+        self.minDia = obj.MinDiameter.Value
+        self.maxDia = obj.MaxDiameter.Value
+        self.startOffset = 0
+        self.endOffset = 0
         self.allowGrooving = obj.AllowGrooving
         self.allowFacing = obj.AllowFacing
         self.stepOver = obj.StepOver.Value
-        self.finishPasses = 2
+        self.finishPasses = obj.FinishPasses
 
         # Clear any existing gcode
         obj.Path.Commands = []
 
         print("Process Geometry")     
-        self.stock_silhoutte = self.get_stock_silhoutte()  
+        self.stock_silhoutte = self.get_stock_silhoutte(obj)  
         self.part_outline = self.get_part_outline()
         self.generate_gcode(obj)
 
     def getProps(self, obj):
         #TODO: use the start and final depths
-        print('getProps - Start Depth: ', obj.OpStartDepth, 'Final Depth: ', obj.FinalDepth)
+        print('getProps - Start Depth: ', obj.OpStartDepth.Value, 'Final Depth: ', obj.OpFinalDepth.Value)
+
         props = {}
         props['min_dia']=self.minDia
         props['extra_dia']=self.maxDia
@@ -135,13 +112,17 @@ class ObjectOp(PathOp.ObjectOp):
         props['vfeed']=obj.ToolController.VertFeed.Value
         return props
 
-    def get_stock_silhoutte(self):
+    def get_stock_silhoutte(self, obj):
         '''
         Get Stock Silhoutte
         '''
         stockBB = self.stock.Shape.BoundBox
         stock_z_pos = stockBB.ZMax
-        stock_plane_length = stockBB.ZLength + self.endOffset + self.startOffset 
+
+        self.startOffset = obj.StartDepth.Value - stockBB.ZMax
+        self.endOffset = stockBB.ZMin - obj.FinalDepth.Value 
+
+        stock_plane_length =  obj.StartDepth.Value - obj.FinalDepth.Value
         stock_plane_width = stockBB.XLength/2 - self.minDia + self.maxDia 
         stock_plane = Part.makePlane(stock_plane_length, stock_plane_width, FreeCAD.Vector(-self.minDia - stock_plane_width, 0, stock_z_pos + self.startOffset ), FreeCAD.Vector(0,-1,0))
         return stock_plane

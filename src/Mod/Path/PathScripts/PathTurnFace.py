@@ -24,6 +24,7 @@
 
 import FreeCAD
 import Path
+import PathScripts.PathUtils as PathUtils
 import PathScripts.PathTurnBase as PathTurnBase
 from PySide import QtCore
 
@@ -42,6 +43,10 @@ def translate(context, text, disambig=None):
 class ObjectTurnFace(PathTurnBase.ObjectOp):
     '''Proxy class for turning facing operations.'''
 
+    def opFeatures(self, obj):
+        '''opFeatures(obj) ... returns the OR'ed list of features used and supported by the operation.'''
+        return PathTurnBase.PathOp.FeatureDiameters | PathTurnBase.PathOp.FeatureTool | PathTurnBase.PathOp.FeatureDepths | PathTurnBase.PathOp.FeatureNoFinalDepth | PathTurnBase.PathOp.FeatureCoolant 
+    
     def generate_gcode(self, obj):
         '''
         Generate GCode for the op
@@ -62,11 +67,10 @@ class ObjectTurnFace(PathTurnBase.ObjectOp):
                 self.commandlist.append(pathCommand)
 
     def opSetDefaultValues(self, obj, job):
-        '''opSetDefaultValues(obj, job) ... initialize defaults'''
-        model = job.Model.Group[0]
         obj.OpStartDepth = obj.OpStockZMax
-        obj.FinalDepth = model.Shape.BoundBox.ZMax
-        print('opSetDefaultValues Profile - Start Depth: ', obj.OpStartDepth, 'Final Depth: ', obj.FinalDepth)
+
+    def opUpdateDepths(self, obj):
+        obj.OpStartDepth = obj.OpStockZMax
 
 def SetupProperties():
     setup = []
@@ -81,7 +85,7 @@ def SetupProperties():
     return setup
     
 def Create(name, obj=None):
-    '''Create(name) ... Creates and returns a Helix operation.'''
+    '''Create(name) ... Creates and returns a TurnFace operation.'''
     if obj is None:
         obj = FreeCAD.ActiveDocument.addObject("Path::FeaturePython", name)
     obj.Proxy = ObjectTurnFace(obj, name)
