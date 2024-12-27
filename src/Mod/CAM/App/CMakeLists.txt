@@ -31,6 +31,7 @@ generate_from_xml(VoronoiPy)
 generate_from_xml(VoronoiCellPy)
 generate_from_xml(VoronoiEdgePy)
 generate_from_xml(VoronoiVertexPy)
+generate_from_xml(TurnedPathPy)
 
 SET(Python_SRCS
     CommandPy.xml
@@ -51,6 +52,8 @@ SET(Python_SRCS
     VoronoiEdgePyImp.cpp
     VoronoiVertexPy.xml
     VoronoiVertexPyImp.cpp
+    TurnedPathPy.xml
+    TurnedPathPyImp.cpp
 )
 
 SET(Mod_SRCS
@@ -89,6 +92,8 @@ SET(Path_SRCS
     VoronoiEdge.h
     VoronoiVertex.cpp
     VoronoiVertex.h
+    TurnedPath.cpp
+    TurnedPath.h
     ${Mod_SRCS}
     ${Python_SRCS}
 )

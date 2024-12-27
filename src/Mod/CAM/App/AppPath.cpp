@@ -43,6 +43,8 @@
 #include "VoronoiPy.h"
 #include "VoronoiVertex.h"
 #include "VoronoiVertexPy.h"
+#include "TurnedPath.h"
+#include "TurnedPathPy.h"
 
 
 namespace PathApp
@@ -71,6 +73,7 @@ PyMOD_INIT_FUNC(PathApp)
     Base::Interpreter().addType(&Path::CommandPy ::Type, pathModule, "Command");
     Base::Interpreter().addType(&Path::PathPy ::Type, pathModule, "Path");
     Base::Interpreter().addType(&Path::AreaPy ::Type, pathModule, "Area");
+    Base::Interpreter().addType(&Path::TurnedPathPy ::Type, pathModule, "TurnedPath");
 
     PyObject* voronoiModule(module.getAttr("Voronoi").ptr());
     Base::Interpreter().addType(&Path::VoronoiPy ::Type, voronoiModule, "Diagram");
@@ -99,6 +102,7 @@ PyMOD_INIT_FUNC(PathApp)
     Path::VoronoiCell ::init();
     Path::VoronoiEdge ::init();
     Path::VoronoiVertex ::init();
+    Path::TurnedPath ::init();
 
     PyMOD_Return(pathModule);
 }

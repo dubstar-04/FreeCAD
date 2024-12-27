@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GenerateModel xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="generateMetaModel_Module.xsd">
+    <PythonExport
+        Father="BaseClassPy"
+        Name="TurnedPathPy"
+        PythonName="Path.TurnedPath"
+        Twin="TurnedPath"
+        TwinPointer="TurnedPath"
+        Include="Mod/CAM/App/TurnedPath.h"
+        Namespace="Path"
+        FatherInclude="Base/BaseClassPy.h"
+        FatherNamespace="Base"
+        Constructor="true"
+        Delete="true">
+        <Documentation>
+            <Author Licence="LGPL" Name="Daniel, Wood" EMail="s.d.wood.82@googlemail.com" />
+            <UserDocu>This class handles Turning Path Area features</UserDocu>
+        </Documentation>
+        <Methode Name="makeTurnedArea">
+            <Documentation>
+                <UserDocu>Return a face of the turned shape.</UserDocu>
+            </Documentation>
+        </Methode>
+        <CustomAttributes />
+    </PythonExport>
+</GenerateModel>

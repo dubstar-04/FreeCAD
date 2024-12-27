@@ -48,6 +48,7 @@
 #include "Area.h"
 #include "PathPy.h"
 #include "FeaturePath.h"
+#include "TurnedPath.h"
 
 
 #define PATH_CATCH                                                                                 \
