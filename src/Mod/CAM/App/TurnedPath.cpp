@@ -81,6 +81,8 @@ TopoDS_Shape TurnedPath::makeTurnedArea(const TopoDS_Shape& shape)
 
         double rotation = Base::toRadians<double>(i);
 
+        FC_WARN("Rotation (Deg): " << i);
+
         // rotate newShape (copy of input shape)
         gp_Trsf mov;
         mov.SetRotation(axis, -rotation);
@@ -92,13 +94,23 @@ TopoDS_Shape TurnedPath::makeTurnedArea(const TopoDS_Shape& shape)
         mkFace.setPlane(pln);
         std::list<TopoDS_Wire> wires;
         Part::CrossSection section(a, b, c, newShape);
-        wires = section.slice(0);
+
+        try {
+            wires = section.slice(0);
+        }
+        catch (Base::Exception& e) {
+            FC_WARN("CrossSection failed: " << e.what());
+        }
 
         if (wires.empty()) {
             FC_WARN("Section returns no wires");
         }
+        else {
+            FC_WARN("Section returns some wires");
+        }
 
         for (const TopoDS_Wire& wire : wires) {
+            showShape(wire, "section_wire");
             if (BRep_Tool::IsClosed(wire)) {
 
                 // create a new wire with all vertex at Y=0
@@ -114,20 +126,32 @@ TopoDS_Shape TurnedPath::makeTurnedArea(const TopoDS_Shape& shape)
                     BRepBuilderAPI_MakeEdge e(gp_Pnt(p1.X(), 0.0, p1.Z()),
                                               gp_Pnt(p2.X(), 0.0, p2.Z()));
 
+
                     mkWire.Add(e.Edge());
                 }
 
-                // fix any continuity issues with the wire
-                ShapeFix_Wire aFix;
-                aFix.Load(TopoDS::Wire(mkWire.Wire()));
-                aFix.FixReorder();
-                aFix.FixConnected();
-                aFix.FixClosed();
-                mkFace.addWire(aFix.Wire());
+                if (mkWire.IsDone()) {
+                    // fix any continuity issues with the wire
+                    ShapeFix_Wire aFix;
+                    aFix.Load(TopoDS::Wire(mkWire.Wire()));
+                    aFix.FixReorder();
+                    aFix.FixConnected();
+                    aFix.FixClosed();
+                    mkFace.addWire(aFix.Wire());
+                }
+            }
+            else {
+                FC_WARN("Wire is not closed");
+                continue;
             }
         }
 
         try {
+            if (!mkFace.IsDone()) {
+                FC_WARN("FaceMakerBullseye failed, mkFace is not done");
+                // continue;
+            }
+
             mkFace.Build();
             const TopoDS_Shape& faceShape = mkFace.Shape();
             // showShape(faceShape, "section_face");
